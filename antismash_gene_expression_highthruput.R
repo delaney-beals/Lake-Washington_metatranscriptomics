@@ -318,6 +318,10 @@ secondary_metabolites_all <- secondary_metabolites_all[grepl("Region", secondary
 secondary_metabolites_050 <- secondary_metabolites_all %>% 
   filter(grepl("bin\\.050", file_name))
 
+# Keep only rows containing "bin.062" in the "file_name" column
+secondary_metabolites_062 <- secondary_metabolites_all %>% 
+  filter(grepl("bin\\.062", file_name))
+
 # MERGING BCG NAMES WITH NODES
 
 # merge summarized count info with BGC info

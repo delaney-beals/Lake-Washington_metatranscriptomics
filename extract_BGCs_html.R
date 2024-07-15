@@ -11,9 +11,6 @@ extract_secondary_metabolites <- function(html_file) {
   # Read the HTML file
   page <- read_html(html_file)
   
-  # Print the structure of the HTML file for debugging
-  # print(page)
-  
   # Initialize empty lists to store the data
   region_ids <- list()
   types <- list()
@@ -65,7 +62,7 @@ extract_secondary_metabolites <- function(html_file) {
 }
 
 # Path to your HTML file
-html_file <- "C:/Users/Delaney/Downloads/54_ Antismash on collection 53_ HTML report/Antismash on collection 53_ HTML report/bin.050.fastanoDAS_assembly.fa.html"
+html_file <- "C:/Users/Delaney/OneDrive/unknown/Documents/antismash_download/Antismash_107_bins_HTML_report/Antismash on collection 107_ HTML report/KBase_derived_bin.050.fastanoDAS_assembly.RAST.gbff.html"
 
 # Extract the data
 secondary_metabolites <- extract_secondary_metabolites(html_file)
@@ -150,7 +147,7 @@ process_folder <- function(folder_path) {
 }
 
 # Specify the folder path
-folder_path <- "C:/Users/Delaney/OneDrive/unknown/Documents/antismash_download/Antismash on collection 107_ HTML report"
+folder_path <- "C:/Users/Delaney/OneDrive/unknown/Documents/antismash_download/Antismash_107_bins_HTML_report/Antismash on collection 107_ HTML report"
 
 # Process the folder and get the combined data frame
 secondary_metabolites_all <- process_folder(folder_path)
@@ -184,7 +181,7 @@ ggplot(aggregated_data, aes(x = bin, y = count, fill = Type)) +
 #### MAKING FEWER CATEGORIES OF BGC TYPES ####
 
 secondary_metabolites_all_cat <- secondary_metabolites_all %>%
-  mutate(Main_Type = case_when(
+   mutate(Main_Type = case_when(
     Type == "NRPS" ~ "NRPS",
     Type == "NRPS-like" ~ "NRPS",
     Type == "terpene" ~ "Terpene",
@@ -211,7 +208,7 @@ ggplot(aggregated_data_cat, aes(x = bin, y = count, fill = Main_Type)) +
   theme_minimal() +
   labs(title = "Predicted BGCs per Bin",
        x = "Bin",
-       y = "Count",
+       y = "# of BGCs detected",
        fill = "Type") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
@@ -228,7 +225,7 @@ ggplot(aggregated_data_cat, aes(x=as.factor(bin), y=count, fill = Main_Type)) +
   theme_minimal() +
   theme(axis.title = element_blank(), panel.grid = element_blank(), plot.margin = unit(rep(0,4), "cm")) +
   coord_polar(start = 0) 
-  
+
 
 ####  ADD TAXONOMY TO MAGS/BINS ####
 # read in CSV containing taxonomy of bins from "Classify Microbes with GTDB-Tk - v1.7.0"  from KBase
@@ -255,7 +252,6 @@ aggregated_data_cat_tax <- aggregated_data_cat_tax %>%
     Genus = ifelse(is.na(Genus), bin, Genus),
     Species = ifelse(is.na(Species), bin, Species)
   )
-
 ## circular bar plot with taxonomy names
 #make labels
 aggregated_data_cat_tax_labels <- distinct(aggregated_data_cat_tax, bin, .keep_all = TRUE)
@@ -267,6 +263,26 @@ ggplot(aggregated_data_cat_tax, aes(x=as.factor(bin), y=count, fill = Main_Type)
   theme(axis.title = element_blank(), panel.grid = element_blank(), plot.margin = unit(rep(0,4), "cm")) +
   coord_polar(start = 0) +
   scale_x_discrete(labels = aggregated_data_cat_tax_labels$Genus)
+
+
+# Create the stacked bar plot
+ggplot(aggregated_data_cat_tax, aes(x = bin, y = count, fill = Main_Type)) +
+  geom_bar(stat = "identity", color = "black") +
+  theme_minimal() +
+  ylim(0,30) +
+  labs(title = "Predicted BGCs per Bin",
+       x = "Bin",
+       y = "# of BGCs detected",
+       fill = "Type") +
+  theme(axis.text.x = element_text(size = 10, angle = 90, hjust = 1, vjust = -0.04)) +
+  scale_x_discrete(labels = aggregated_data_cat_tax_labels$Genus) 
+
+
+
+# change color of specific BGC
+fill_col = c("deepskyblue", "lightskyblue", "olivedrab", "palegoldenrod", "hotpink", "purple", "blue", "green", "yellow", "orange", "red")
+
+
 
 
 
