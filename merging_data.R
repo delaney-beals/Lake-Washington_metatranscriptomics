@@ -46,16 +46,16 @@ htmlFile <- "C:/Users/Delaney/OneDrive/unknown/Documents/antismash_download/Anti
 nodeAndRegionData <- extractNodeAndRegionIDsFromHTML(htmlFile)
 
 # subset dataframe
-nodeAndRegionData_050 <- nodeAndRegionData[1:26, ]
+nodeAndRegionData_062 <- nodeAndRegionData[1:13, ]
 
 # i know that NODE_4682 and NODE_516 didn't make it through the pipeline because I suspect there were no reads assigned to those contigs. I know this because of the warning out put after I ran the "process .gbk files" in the antismash_gene_expression_highthruput script
 # for now I want to remove those nodes
 
-nodeAndRegionData_050 <- subset(nodeAndRegionData_050, Node != "NODE_4682_length_12699_cov_32.3638")
-nodeAndRegionData_050 <- subset(nodeAndRegionData_050, Node != "NODE_516_length_75863_cov_38.79451")
+nodeAndRegionData_062 <- subset(nodeAndRegionData_062, Node != "NODE_18647_length_3667_cov_3.87486")
+
 
 # Modify the "Region_ID" column
-nodeAndRegionData_050$Region_ID <- sub("Region", "Region&nbsp", nodeAndRegionData_050$Region_ID)
+nodeAndRegionData_062$Region_ID <- sub("Region", "Region&nbsp", nodeAndRegionData_062$Region_ID)
 
 
 

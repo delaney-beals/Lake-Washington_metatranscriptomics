@@ -62,7 +62,7 @@ extract_secondary_metabolites <- function(html_file) {
 }
 
 # Path to your HTML file
-html_file <- "C:/Users/Delaney/OneDrive/unknown/Documents/antismash_download/Antismash_107_bins_HTML_report/Antismash on collection 107_ HTML report/KBase_derived_bin.050.fastanoDAS_assembly.RAST.gbff.html"
+html_file <- "C:/Users/Delaney/OneDrive/unknown/Documents/antismash_download/Antismash_107_bins_HTML_report/Antismash on collection 107_ HTML report/KBase_derived_bin.062.fastanoDAS_assembly.RAST.gbff.html"
 
 # Extract the data
 secondary_metabolites <- extract_secondary_metabolites(html_file)
@@ -212,11 +212,6 @@ ggplot(aggregated_data_cat, aes(x = bin, y = count, fill = Main_Type)) +
        fill = "Type") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-# reorder list of BGC types
-desired_order <- rev(c("NRPS", "RiPP", "PKS", "Terpene", "Redox Cofactor", "Other", "Homoserine lactone", "Non-Amino Acid Peptide"))
-aggregated_data_cat$Main_Type <- factor(aggregated_data_cat$Main_Type, levels = desired_order)
-
-
 
 ## circular bar plot
 ggplot(aggregated_data_cat, aes(x=as.factor(bin), y=count, fill = Main_Type)) + 
@@ -274,13 +269,25 @@ ggplot(aggregated_data_cat_tax, aes(x = bin, y = count, fill = Main_Type)) +
        x = "Bin",
        y = "# of BGCs detected",
        fill = "Type") +
-  theme(axis.text.x = element_text(size = 10, angle = 90, hjust = 1, vjust = -0.04)) +
-  scale_x_discrete(labels = aggregated_data_cat_tax_labels$Genus) 
+  theme(text=element_text(size=14),
+    axis.text.x = element_text(size = 14, angle = 90, hjust = 1, vjust = -0.04, color = "black", face = "italic"),
+    axis.text.y = element_text(size = 14, color = "black"), 
+    title = element_text(size = 14, color = "black"), 
+    legend.title = element_blank(), 
+    panel.grid.major.x = element_blank(), 
+    panel.grid.minor.x = element_blank(), 
+    panel.grid.minor.y = element_blank()
+    ) +
+  scale_x_discrete(labels = aggregated_data_cat_tax_labels$label) 
 
 
+# Create the new column 'label'
+aggregated_data_cat_tax_labels$label <- ifelse(
+  grepl("g__$", aggregated_data_cat_tax_labels$Genus),
+  aggregated_data_cat_tax_labels$Family,
+  aggregated_data_cat_tax_labels$Genus
+)
 
-# change color of specific BGC
-fill_col = c("deepskyblue", "lightskyblue", "olivedrab", "palegoldenrod", "hotpink", "purple", "blue", "green", "yellow", "orange", "red")
 
 
 

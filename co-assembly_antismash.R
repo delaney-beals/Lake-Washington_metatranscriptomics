@@ -48,11 +48,12 @@ extract_positions <- function(location) {
   return(c(start, end))
 }
 
-# Directory containing the .gbk files
-gbk_dir <- "C:/Users/Delaney/OneDrive/unknown/Documents/antismash_download/Antismash_107_bins_HTML_report/Antismash on collection 107_ HTML report/KBase_derived_bin.062.fastanoDAS_assembly.RAST.gbff/"
+# Directory containing the assembly file (.fa or .gbk)
+gbk_files <- "C:/Users/Delaney/OneDrive/unknown/Desktop/metaSPAdes_merged/metaSPAdes_merged.Assembly.fa"
 
-# Read the index.html file and extract sequence names
-index_file <- "C:/Users/Delaney/OneDrive/unknown/Documents/antismash_download/Antismash_107_bins_HTML_report/Antismash on collection 107_ HTML report/KBase_derived_bin.062.fastanoDAS_assembly.RAST.gbff/index.html"
+
+# Read the index.html file containing BGC info from antiSMASH and extract sequence names
+index_file <- "C:/Users/Delaney/OneDrive/unknown/Desktop/index.html"
 html_content <- read_html(index_file)
 
 # Extract relevant information
@@ -63,24 +64,19 @@ seq_info <- html_content %>%
   unlist()
 
 # Extract sequence names from the HTML
-seq_info <- str_extract_all(seq_info, "c\\d+_NODE_\\d+\\.\\. .*\\(original name was: NODE_\\d+_length_\\d+_cov_\\d+\\.\\d+\\) .*") %>%
+seq_info <- str_extract_all(seq_info, "NODE_\\d+_length_\\d+_cov_\\d+\\.\\d+ - Region \\d+ - [^ ]+") %>%
   unlist()
 
-# Get the number of .gbk files in the directory
-gbk_files <- list.files(gbk_dir, pattern = "\\.gbk$", full.names = TRUE)
-num_gbk_files <- length(gbk_files)
-
-# Extract the same number of sequence names as there are .gbk files
-seq_info <- seq_info[1:num_gbk_files]
 
 # Parse the extracted information into a named list
 seqnames <- sapply(seq_info, function(info) {
-  parts <- str_match(info, "(c\\d+_NODE_\\d+\\.\\..*) \\(original name was: (NODE_\\d+_length_\\d+_cov_\\d+\\.\\d+)\\)")
-  c(parts[2], parts[3])
+  parts <- str_match(info, "(NODE_\\d+_length_\\d+_cov_\\d+\\.\\d+) - Region (\\d+) - ([^ ]+)")
+  c(Node = parts[2], Region = parts[3], Type = parts[4])
 }, simplify = FALSE)
 
+
 # Create a named list where the key is the file pattern and the value is the sequence name
-seqnames <- setNames(sapply(seqnames, "[", 2), sapply(seqnames, "[", 1))
+seqnames <- setNames(sapply(seqnames, "[", 1), sapply(seqnames, "[", 3))
 
 # Function to extract sequence names from BAM header
 get_bam_seqnames <- function(bamfile) {
@@ -126,8 +122,8 @@ for (i in seq_along(gbk_files)) {
                 gene = genes_df$name)
   
   # Define BAM file paths
-  input_bam <- "LWdata/21113X2_bin062_accepted_hits.bam"
-  output_bam <- paste0("LWdata/bin_062_accepted_hits/21113X1_accepted_hits_", seqname, "_BGC.bam")
+  input_bam <- "C:/Users/Delaney/OneDrive/unknown/Desktop/merged_replicates.bam"
+  output_bam <- paste0("C:/Users/Delaney/OneDrive/unknown/Desktop/21113R_accepted_hits_", seqname, "_BGC.bam")
   
   # Check if the BAM file is already indexed
   if (!file.exists(paste0(input_bam, ".bai"))) {
@@ -158,7 +154,7 @@ for (i in seq_along(gbk_files)) {
   export(bam, output_bam, format = "BAM")
   
   # Define file paths
-  gtf_file_path <- paste0("LWdata/", seqname, ".gtf")
+  gtf_file_path <- paste0("C:/Users/Delaney/OneDrive/unknown/Desktop/", seqname, ".gtf")
   
   # Extract gene annotations
   genes <- readGenBankFile(gbk_file)
@@ -180,7 +176,7 @@ for (i in seq_along(gbk_files)) {
   write.table(gtf_data, file = gtf_file_path, sep = "\t", quote = FALSE, col.names = FALSE, row.names = FALSE)
   
   # Define file paths
-  output_counts_path <- paste0("LWdata/", seqname, "_gene_counts.txt")
+  output_counts_path <- paste0("C:/Users/Delaney/OneDrive/unknown/Desktop/", seqname, "_gene_counts.txt")
   
   # Perform gene counting
   fc <- featureCounts(files = output_bam,
@@ -194,11 +190,11 @@ for (i in seq_along(gbk_files)) {
   # Save the gene counts to a file
   count_table <- as.data.frame(fc$counts)
   write.table(count_table, file = output_counts_path, sep = "\t", quote = FALSE, col.names = NA)
-  }
+}
 
 # COMBINE GENE COUNT TABLES
 # Directory containing the gene count files
-counts_dir <- "LWdata"
+counts_dir <- "C:/Users/Delaney/OneDrive/unknown/Desktop/"
 
 # List all files in the directory that end with "_gene_counts.txt"
 count_files <- list.files(counts_dir, pattern = "_gene_counts.txt$", full.names = TRUE)
