@@ -25,5 +25,6 @@
 
 
 ### Individual bins
-1. Download all bin.###.fastanoDAS_assembly.RAST genbank files from [KBASE](https://narrative.kbase.us/narrative/156152) analysis
-2. extract and organize all .gbff files using the "unzip_KBase_files" script in R
+1. Download all **bin.###.fastanoDAS_assembly.RAST** genbank files from [KBASE](https://narrative.kbase.us/narrative/156152) analysis
+2. extract and organize all .gbff files using [unzip_KBase_files.R](https://github.com/delaney-beals/LW-lowFe/blob/main/unzip_KBase_files.R)
+3. process 
