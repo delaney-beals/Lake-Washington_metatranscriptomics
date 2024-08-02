@@ -18,10 +18,9 @@
        - Output files: **output_annotation.gtf**
   4. Get read counts for all BGCs
        - Run [Feature_counts](https://github.com/delaney-beals/LW-lowFe/blob/main/Feature_counts) in bash
-       - Output file: **feature_counts.txt** and **feature_counts.txt.summary**
-  5. Clean up feature_counts ouput file
-       - Run 
-  7. Data visualization of distribution of BGCs
+       - Output file: **feature_counts.txt**, **feature_counts.txt.summary**, and **feature_counts_individual.txt**
+  5. Data visualization of distribution of BGCs
+       - Run [feature_counts_visualization.R]()
 
 
 ### Individual bins
