@@ -6,16 +6,21 @@
          - In [KBASE](https://narrative.kbase.us/narrative/156152): trim, check quality, and assemble (merging biological replicates)
          - Download the **metaSPAdes_merged.Assembly.fa** file
       - Starting with raw RNA reads
-         - Using the bash scripts in "Lake Washington low iron metatranscriptome scripts. txt" file available in this repository: trim adapters, check quality, map reads to the metagenome, and merge biological replicates
+         - Using the bash scripts in "[Metatranscriptome_processing](https://github.com/delaney-beals/LW-lowFe/blob/main/Metatranscriptome_processing)" file available in this repository: trim adapters, check quality, map reads to the metagenome, and merge biological replicates
          - Output files: **merged_replicates.bam** and its accompanying indexed bam, **merged_replicates.bam.bai**
   2. Run antiSMASH on the metagenome
-       - Use standalone/local [antiSMASH](https://docs.antismash.secondarymetabolites.org/install/) on metaSPAdes_merged.Assembly.fa
+       - Use standalone/local antiSMASH on **metaSPAdes_merged.Assembly.fa**; script available in this repository as "Local antiSMASH"
        - Output files: **metaSPAdes_merged_Assembly.gbk** and **index.html**
-       - Copy all node + BGC hits from index.html and paste into a text file called **metaspades_merged_bgc.txt**
-  3. Get read counts for all BGCs
+       - Copy all node + BGC hits from index.html and paste into a new text file called **metaspades_merged_bgc.txt**
+  3. Scan antiSMASH output to collate gene ID and BGC type
        - Run **co-assembly_antismash.R**, available in this repository
-       - Output files: gene_counts.txt
-  4. Data visualization of distribution of BGCs
+       - Output files: **output_annotation.gtf**
+  4. Get read counts for all BGCs
+       - Run featurecounts2.sh in bash on CHPC; script available in this repository
+       - Output file: **feature_counts.txt** and **feature_counts.txt.summary**
+  5. Clean up feature_counts ouput file
+       - Run 
+  7. Data visualization of distribution of BGCs
 
 
 ### Individual bins
