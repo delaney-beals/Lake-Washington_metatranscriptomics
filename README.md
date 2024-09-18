@@ -26,4 +26,12 @@
 ### Individual bins
 1. Download all **bin.###.fastanoDAS_assembly.RAST** genbank files from [KBASE](https://narrative.kbase.us/narrative/156152) analysis
 2. extract and organize all .gbff files using [unzip_KBase_files.R](https://github.com/delaney-beals/LW-lowFe/blob/main/unzip_KBase_files.R)
-3. process 
+3. process
+
+### antiSMASH output of individual metaSPAdes assemblies + co-assembly 
+1. run concatenate_gbk.sh
+   - output file is a single .fa file which
+2. build a bowtie index
+3. run bowtie 2 using all metatranscriptome replicates
+4. visualize comparison between metatranscriptome replicates? 
+5. merge metatranscriptome reads? 
