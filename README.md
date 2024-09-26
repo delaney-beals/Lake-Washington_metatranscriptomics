@@ -30,8 +30,13 @@
 
 ### antiSMASH output of individual metaSPAdes assemblies + co-assembly 
 1. run concatenate_gbk.sh
-   - output file is a single .fa file which
-2. build a bowtie index
+   - output file is a single .fa file which serves as our reference genome for aligning reads
+2. build a bowtie index of the single .fa filey
 3. run bowtie 2 using all metatranscriptome replicates
-4. visualize comparison between metatranscriptome replicates? 
-5. merge metatranscriptome reads? 
+4. run readcount3.sh, which does the following:
+   - Extract the number of reads for each node/contig from the BAM file.
+   - Parse the .gbk files to extract biosynthetic gene cluster (BGC) categories such as "terpene."
+   - Combine the data from the BAM file (read counts) and .gbk files (BGC categories) into a table, indicating from which metatranscriptome replicate the read count information was pulled from
+  
+9. visualize comparison between metatranscriptome replicates? 
+10. merge metatranscriptome reads? 
