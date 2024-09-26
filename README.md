@@ -37,6 +37,5 @@
    - Extract the number of reads for each node/contig from the BAM file.
    - Parse the .gbk files to extract biosynthetic gene cluster (BGC) categories such as "terpene."
    - Combine the data from the BAM file (read counts) and .gbk files (BGC categories) into a table, indicating from which metatranscriptome replicate the read count information was pulled from
-  
-9. visualize comparison between metatranscriptome replicates? 
-10. merge metatranscriptome reads? 
+5. visualize comparison between metatranscriptome replicates using metaspades_antismash_viz.Rmd
+6. merge metatranscriptome reads? 
