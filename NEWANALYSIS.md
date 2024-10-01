@@ -1,3 +1,12 @@
+From 3 biological replicates of low-iron, methane-fed Lake Washington sediment enrichments, we have:
+   - metaSPAdes-assembled metagenome assemblies (21142X1, 21142X2, 21142X3, coassembly)
+   - metatranscriptomes (21113X1, 21113X2, 21113X3)
+
+1. Make bowtie2 indices of each metagenome assembly
+2. Map each metatranscriptome replicate onto each metagenome assembly
+     - This should result in 12 total .bam files
+
+
 ## For each metagenome...
 
 1. Convert .gbk files to .gff
@@ -30,5 +39,8 @@
 
 7. Convert merged_output.txt to a .csv
    > tr -s ' ' ',' < merged_output_21113X2.txt > merged_output_21113X2.csv
+   
+
+Now go to metaSPAdes_antismash_viz.Rmd to visualize these. 
 
 
