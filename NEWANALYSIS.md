@@ -2,8 +2,11 @@ From 3 biological replicates of low-iron, methane-fed Lake Washington sediment e
    - metaSPAdes-assembled metagenome assemblies (21142X1, 21142X2, 21142X3, coassembly)
    - metatranscriptomes (21113X1, 21113X2, 21113X3)
 
-1. Make bowtie2 indices of each metagenome assembly
-2. Map each metatranscriptome replicate onto each metagenome assembly
+## Read trimming and mapping
+1. bbduk
+2. fastp
+3. Make bowtie2 indices of each metagenome assembly
+4. Map each metatranscriptome replicate onto each metagenome assembly
      - This should result in 12 total .bam files
 
 
@@ -30,15 +33,16 @@ From 3 biological replicates of low-iron, methane-fed Lake Washington sediment e
    - This will create a file node_read_counts.txt where each row contains:
    
      NODE_name | NODE_length | number_of_mapped_reads | number_of_unmapped_reads
-   > samtools idxstats your_alignment.bam > node_read_counts.txt
+   > samtools idxstats output/your_alignment.bam > node_read_counts.txt
 
 5. Combine the read counts with the NODE_name information from antiSMASH
-   > join -1 1 -2 1 <(sort node_read_counts.txt) <(sort nodes_in_antismash.txt) > combined_node_read_counts.txt
+   > for file in node_read_counts*.txt; do join -1 1 -2 1 <(sort "$file") <(sort nodes_in_antismash.txt) > "combined_${file%.txt}.txt"; done
 
 6. Add biosynthetic cluster names to read count table using [merge_tables.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/merge_tables.sh) 
 
 7. Convert merged_output.txt to a .csv
-   > tr -s ' ' ',' < merged_output_21113X2.txt > merged_output_21113X2.csv
+   > for file in merged_output_21113X*.txt; do tr -s ' ' ',' < "$file" > "${file%.txt}.csv"; done
+
    
 
 Now go to metaSPAdes_antismash_viz.Rmd to visualize these. 
