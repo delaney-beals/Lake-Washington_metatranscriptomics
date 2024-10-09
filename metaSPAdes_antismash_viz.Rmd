@@ -1,0 +1,445 @@
+---
+title: "R Notebook"
+output: html_document
+---
+```{r warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(RColorBrewer)
+```
+
+Merge individual read count tables into one mega table.
+```{r}
+# Read in the processed data
+# assembly: 21142X1
+merged_output_21142X1_21113X1 <- read.csv("merged_output_21142X1_21113X1.csv")
+merged_output_21142X1_21113X2 <- read.csv("merged_output_21142X1_21113X2.csv")
+merged_output_21142X1_21113X3 <- read.csv("merged_output_21142X1_21113X3.csv")
+
+# assembly: 21142X2
+merged_output_21142X2_21113X1 <- read.csv("merged_output_21142X2_21113X1.csv")
+merged_output_21142X2_21113X2 <- read.csv("merged_output_21142X2_21113X2.csv")
+merged_output_21142X2_21113X3 <- read.csv("merged_output_21142X2_21113X3.csv")
+
+# assembly: 21142X3
+merged_output_21142X3_21113X1 <- read.csv("merged_output_21142X3_21113X1.csv")
+merged_output_21142X3_21113X2 <- read.csv("merged_output_21142X3_21113X2.csv")
+merged_output_21142X3_21113X3 <- read.csv("merged_output_21142X3_21113X3.csv")
+
+# assembly: co-assembly
+merged_output_coassembly_21113X1 <- read.csv("merged_output_coassembly_21113X1.csv")
+merged_output_coassembly_21113X2 <- read.csv("merged_output_coassembly_21113X2.csv")
+merged_output_coassembly_21113X3 <- read.csv("merged_output_coassembly_21113X3.csv")
+```
+
+Before we combine things, we need to check for duplicate rows. 
+```{r}
+ merged_output_21142X3_21113X1 %>% 
+  filter(duplicated(NODE_name))
+```
+If we search these NODE_names in the corresponding dataframe, we see that duplicates only differ by having different values in the protocluster column. Let's make these into one row by moving the protocluster of one replicate into the secondary_protocluster of the other replicate.
+```{r}
+# Define a function to process each dataframe
+handle_duplicates <- function(df) {
+  df <- df %>%
+    group_by(NODE_name) %>%
+    # For each group of NODE_name, do this:
+    mutate(
+      # If there are duplicates, assign the protocluster from the second row (if exists) to the secondary_protocluster in the first row
+      secondary_protocluster = ifelse(row_number() == 1 & n() > 1, 
+                                      lead(protocluster, default = NA), 
+                                      secondary_protocluster)
+    ) %>%
+    # If the protocluster is moved to secondary_protocluster, remove the protocluster in the duplicate row
+    mutate(
+      protocluster = ifelse(row_number() > 1, NA, protocluster)
+    ) %>%
+    ungroup() %>%
+    # Now remove any rows where protocluster is NA
+    filter(!is.na(protocluster))
+  
+  return(df)
+}
+
+# Apply this function to all dataframes
+merged_output_21142X1_21113X1 <- handle_duplicates(merged_output_21142X1_21113X1)
+merged_output_21142X1_21113X2 <- handle_duplicates(merged_output_21142X1_21113X2)
+merged_output_21142X1_21113X3 <- handle_duplicates(merged_output_21142X1_21113X3)
+
+merged_output_21142X2_21113X1 <- handle_duplicates(merged_output_21142X2_21113X1)
+merged_output_21142X2_21113X2 <- handle_duplicates(merged_output_21142X2_21113X2)
+merged_output_21142X2_21113X3 <- handle_duplicates(merged_output_21142X2_21113X3)
+
+merged_output_21142X3_21113X1 <- handle_duplicates(merged_output_21142X3_21113X1)
+merged_output_21142X3_21113X2 <- handle_duplicates(merged_output_21142X3_21113X2)
+merged_output_21142X3_21113X3 <- handle_duplicates(merged_output_21142X3_21113X3)
+
+merged_output_coassembly_21113X1 <- handle_duplicates(merged_output_coassembly_21113X1)
+merged_output_coassembly_21113X2 <- handle_duplicates(merged_output_coassembly_21113X2)
+merged_output_coassembly_21113X3 <- handle_duplicates(merged_output_coassembly_21113X3)
+```
+
+Now we can combine our reads from the three replicates. We have to keep the different assemblies separate at this point since they have different NODE_names. 
+
+```{r}
+# Combine the data frames using full joins, keeping the assemblies separate
+combined_21142X1 <- merged_output_21142X1_21113X1 %>%
+  full_join(merged_output_21142X1_21113X2, by = "NODE_name") %>%
+  full_join(merged_output_21142X1_21113X3, by = "NODE_name")
+  
+
+combined_21142X2 <- merged_output_21142X2_21113X1 %>%
+  full_join(merged_output_21142X2_21113X2, by = "NODE_name") %>%
+  full_join(merged_output_21142X2_21113X3, by = "NODE_name")
+
+combined_21142X3 <- merged_output_21142X3_21113X1 %>%
+  full_join(merged_output_21142X3_21113X2, by = "NODE_name") %>%
+  full_join(merged_output_21142X3_21113X3, by = "NODE_name")
+
+combined_coassembly <- merged_output_coassembly_21113X1 %>%
+  full_join(merged_output_coassembly_21113X2, by = "NODE_name") %>%
+  full_join(merged_output_coassembly_21113X3, by = "NODE_name")
+```
+
+Let's plot one assembly at a time. But first, we need to reshape the data. 
+```{r}
+# Reshape the dataframe into long format
+
+# Assembly 2242X1
+combined_21142X1_long <- combined_21142X1 %>%
+  pivot_longer(cols = starts_with("mapped_reads"), 
+               names_to = "MTX_replicate", 
+               values_to = "mapped_reads") %>%
+  pivot_longer(cols = starts_with("protocluster"), 
+               names_to = "protocluster_replicate", 
+               values_to = "protocluster") %>%
+  # Ensure that the correct replicates are paired
+  filter(grepl(".x", MTX_replicate) & grepl(".x", protocluster_replicate) |
+         grepl(".y", MTX_replicate) & grepl(".y", protocluster_replicate) |
+         !grepl(".x|.y", MTX_replicate) & !grepl(".x|.y", protocluster_replicate)) %>%
+  # Clean up the replicate column to only show x, y, or z
+  mutate(MTX_replicate = case_when(
+    grepl(".x", MTX_replicate) ~ "21113X1",
+    grepl(".y", MTX_replicate) ~ "21113X2",
+    TRUE ~ "21113X3"
+  ))
+
+
+# Assembly 2242X2
+combined_21142X2_long <- combined_21142X2 %>%
+  pivot_longer(cols = starts_with("mapped_reads"), 
+               names_to = "MTX_replicate", 
+               values_to = "mapped_reads") %>%
+  pivot_longer(cols = starts_with("protocluster"), 
+               names_to = "protocluster_replicate", 
+               values_to = "protocluster") %>%
+  # Ensure that the correct replicates are paired
+  filter(grepl(".x", MTX_replicate) & grepl(".x", protocluster_replicate) |
+         grepl(".y", MTX_replicate) & grepl(".y", protocluster_replicate) |
+         !grepl(".x|.y", MTX_replicate) & !grepl(".x|.y", protocluster_replicate)) %>%
+  # Clean up the replicate column to only show x, y, or z
+  mutate(MTX_replicate = case_when(
+    grepl(".x", MTX_replicate) ~ "21113X1",
+    grepl(".y", MTX_replicate) ~ "21113X2",
+    TRUE ~ "21113X3"
+  ))
+
+# Assembly 2242X3
+combined_21142X3_long <- combined_21142X3 %>%
+  pivot_longer(cols = starts_with("mapped_reads"), 
+               names_to = "MTX_replicate", 
+               values_to = "mapped_reads") %>%
+  pivot_longer(cols = starts_with("protocluster"), 
+               names_to = "protocluster_replicate", 
+               values_to = "protocluster") %>%
+  # Ensure that the correct replicates are paired
+  filter(grepl(".x", MTX_replicate) & grepl(".x", protocluster_replicate) |
+         grepl(".y", MTX_replicate) & grepl(".y", protocluster_replicate) |
+         !grepl(".x|.y", MTX_replicate) & !grepl(".x|.y", protocluster_replicate)) %>%
+  # Clean up the replicate column to only show x, y, or z
+  mutate(MTX_replicate = case_when(
+    grepl(".x", MTX_replicate) ~ "21113X1",
+    grepl(".y", MTX_replicate) ~ "21113X2",
+    TRUE ~ "21113X3"
+  ))
+
+# Assembly coassembly
+combined_coassembly_long <- combined_coassembly %>%
+  pivot_longer(cols = starts_with("mapped_reads"), 
+               names_to = "MTX_replicate", 
+               values_to = "mapped_reads") %>%
+  pivot_longer(cols = starts_with("protocluster"), 
+               names_to = "protocluster_replicate", 
+               values_to = "protocluster") %>%
+  # Ensure that the correct replicates are paired
+  filter(grepl(".x", MTX_replicate) & grepl(".x", protocluster_replicate) |
+         grepl(".y", MTX_replicate) & grepl(".y", protocluster_replicate) |
+         !grepl(".x|.y", MTX_replicate) & !grepl(".x|.y", protocluster_replicate)) %>%
+  # Clean up the replicate column to only show x, y, or z
+  mutate(MTX_replicate = case_when(
+    grepl(".x", MTX_replicate) ~ "21113X1",
+    grepl(".y", MTX_replicate) ~ "21113X2",
+    TRUE ~ "21113X3"
+  ))
+```
+
+```{r}
+# Create the stacked bar plot
+ggplot(combined_21142X1_long, aes(x = MTX_replicate, y = mapped_reads, fill = protocluster)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(x = "MTX Replicate", y = "Total Reads", fill = "Protocluster") +
+  ggtitle("Total Reads by MTX Replicate and BGC for 21142X1") +
+  theme_classic()
+
+
+ggplot(combined_21142X2_long, aes(x = MTX_replicate, y = mapped_reads, fill = protocluster)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(x = "MTX Replicate", y = "Total Reads", fill = "Protocluster") +
+  ggtitle("Total Reads by MTX Replicate and BGC for 21142X2") +
+  theme_classic()
+
+ggplot(combined_21142X3_long, aes(x = MTX_replicate, y = mapped_reads, fill = protocluster)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(x = "MTX Replicate", y = "Total Reads", fill = "Protocluster") +
+  ggtitle("Total Reads by MTX Replicate and BGC for 21142X3") +
+  theme_classic()
+
+ggplot(combined_coassembly_long, aes(x = MTX_replicate, y = mapped_reads, fill = protocluster)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(x = "MTX Replicate", y = "Total Reads", fill = "Protocluster") +
+  ggtitle("Total Reads by MTX Replicate and BGC for coassembly") +
+  theme_classic()
+```
+
+Let's make a clustered bar plot.
+```{r}
+# Add a column for the assembly in each data frame
+combined_21142X1_long <- combined_21142X1_long %>%
+  mutate(assembly = "21142X1")
+
+combined_21142X2_long <- combined_21142X2_long %>%
+  mutate(assembly = "21142X2")
+
+combined_21142X3_long <- combined_21142X3_long %>%
+  mutate(assembly = "21142X3")
+
+combined_coassembly_long <- combined_coassembly_long %>%
+  mutate(assembly = "coassembly")
+
+# Combine both data frames
+combined_long <- bind_rows(combined_21142X1_long, combined_21142X2_long, combined_21142X3_long, combined_coassembly_long)
+
+# Create a new column to indicate just the MTX replicate for clearer labeling
+combined_long_facet <- combined_long %>%
+  mutate(MTX_replicate_label = MTX_replicate)
+
+# Create the stacked bar plot with facets for assembly and MTX replicate
+ggplot(combined_long_facet, aes(x = MTX_replicate_label, y = mapped_reads, fill = protocluster)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(x = "", y = "Total Reads", fill = "Protocluster") +
+  ggtitle("Total Reads by Assembly, MTX Replicate, and Protocluster") +
+  theme_classic() +
+  facet_grid(. ~ assembly, scales = "free_x", space = "free_x", switch = "x") +
+  theme(strip.background = element_blank(),
+        strip.placement = "outside",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+```{r}
+combined_long_facet %>%
+  group_by(assembly, MTX_replicate) %>%
+  summarise(total_mapped_reads = sum(mapped_reads, na.rm = TRUE))
+```
+
+
+There are too many categories of BGCs, let's combine some. 
+
+```{r}
+# First, create a new column to categorize protoclusters similarly to your other analysis
+combined_long_summary <- combined_long_facet %>%
+  mutate(protocluster_category = case_when(
+    protocluster == "NRPS" ~ "NRPS",
+    protocluster == "NRPS-like" ~ "NRPS",
+    protocluster == "terpene" ~ "Terpene",
+    protocluster == "T1PKS" ~ "PKS",
+    protocluster == "T3PKS" ~ "PKS",
+    protocluster == "T1PKS,T3PKS" ~ "PKS",
+    protocluster == "siderophore" ~ "Siderophore",
+    protocluster == "RiPP-like" ~ "RiPP",
+    protocluster == "RRE-containing" ~ "RRE-containing",
+    protocluster == "redox-cofactor" ~ "Redox cofactor",
+    protocluster == "hserlactone" ~ "Homoserine lactone",
+    protocluster == "NAPAA" ~ "Non-amino acid peptide",
+    protocluster == "acyl_amino_acids" ~ "Acyl amino acids",
+    protocluster == "acyl_amino_acids,hserlactone" ~ "Acyl amino acids",
+    protocluster == "arylpolyene,ectoine" ~ "Aryl polyene",
+    protocluster == "arylpolyene,resorcinol" ~ "Aryl polyene",
+    protocluster == "betalactone" ~ "Betalactone",
+    protocluster == "blactam" ~ "β-lactam",
+    protocluster == "butyrolactone" ~ "Butyrolactone",
+    protocluster == "hglE-KS" ~ "Heterocyst glycolipid synthase-like PKS",
+    protocluster == "hglE-KS,T3PKS" ~ "Heterocyst glycolipid synthase-like PKS",
+    protocluster == "hydrogen-cyanide" ~ "Hydrogen cyanide",
+    protocluster == "lanthipeptide-class-i" ~ "Lanthipeptide",
+    protocluster == "lanthipeptide-class-v" ~ "Lanthipeptide",
+    protocluster == "LAP" ~ "Linear azol(in)e-containing peptides",
+    protocluster == "lassopeptide" ~ "Lasso peptide",
+    protocluster == "lassopeptide,RRE-containing" ~ "Lasso peptide",
+    protocluster == "methanobactin" ~ "Copper-chelating",
+    protocluster == "NAGGN" ~ "N-acetylglutaminylglutamine amide",
+    protocluster == "NI-siderophore" ~ "Siderophore",
+    protocluster == "NRPS-like,NRPS" ~ "NRPS",
+    protocluster == "NRPS-like,T1PKS" ~ "NRPS",
+    protocluster == "NRPS,T1PKS" ~ "NRPS",
+    protocluster == "NRPS,T1PKS,NRPS-like" ~ "NRPS",
+    protocluster == "phosphonate" ~ "Phosphonate",
+    protocluster == "ranthipeptide" ~ "Ranthipeptide",
+    protocluster == "resorcinol" ~ "Resorcinol",
+    protocluster == "arylpolyene" ~ "Aryl polyene",
+    protocluster == "indole" ~ "Indole",
+    protocluster == "resorcinol,arylpolyene" ~ "Resorcinol",
+    protocluster == "resorcinol,T3PKS" ~ "Resorcinol",
+    protocluster == "RRE-containing,lassopeptide" ~ "RRE-containing",
+    protocluster == "T1PKS,NRPS" ~ "PKS",
+    protocluster == "T1PKS,NRPS-like,NRPS" ~ "PKS",
+    protocluster == "thiopeptide" ~ "Thiopeptide",
+    protocluster == "T3PKS,hglE-KS" ~ "PKS",
+    protocluster == "thioamitides" ~ "Thioamitide RiPPs",
+    protocluster == "proteusin" ~ "Proteusin",
+    protocluster == "transAT-PKS,T3PKS" ~ "PKS",
+    protocluster == "transAT-PKS" ~ "PKS",
+    protocluster == "transAT-PKS-like" ~ "PKS",
+    protocluster == "CDPS" ~ "tRNA-dependent cyclodipeptide synthases",
+    protocluster == "NRP-metallophore" ~ "NRP-metallophore",
+    protocluster == "NRPS,NRPS-like" ~ "NRPS"
+  )) %>%
+  group_by(MTX_replicate_label, protocluster_category, assembly) %>%
+  summarise(total_mapped_reads = sum(mapped_reads, na.rm = TRUE))
+
+# Create the updated stacked bar plot using the new summarized data
+ggplot(combined_long_summary, aes(x = MTX_replicate_label, y = total_mapped_reads, fill = protocluster_category)) +
+  geom_bar(stat = "identity", color="black") +
+  theme_minimal() +
+  labs(x = "", y = "Total Reads", fill = "Protocluster") +
+  ggtitle("Total Reads by Assembly, MTX Replicate, and Protocluster") +
+  theme_classic() +
+  facet_grid(. ~ assembly, scales = "free_x", space = "free_x", switch = "x") +
+  theme(strip.background = element_blank(),
+        strip.placement = "outside",
+        axis.text.x = element_text(angle = 45, hjust = 1))  + scale_y_log10() 
+
+
+```
+
+
+
+If I get any NA's in my plot, run this to find missing categories and add them to the big list above. 
+
+```{r}
+# Define the list of protocluster values from your conversion list
+conversion_list <- c(
+  "NRPS", "NRPS-like", "terpene", "T1PKS", "T3PKS", "T1PKS,T3PKS", "siderophore", "RiPP-like", "RRE-containing", "redox-cofactor", 
+  "hserlactone", "NAPAA", "acyl_amino_acids", "acyl_amino_acids,hserlactone", "arylpolyene,ectoine", "arylpolyene,resorcinol", 
+  "betalactone", "blactam", "butyrolactone", "hglE-KS", "hglE-KS,T3PKS", "hydrogen-cyanide", "lanthipeptide-class-i", 
+  "lanthipeptide-class-v", "LAP", "lassopeptide", "lassopeptide,RRE-containing", "methanobactin", "NAGGN", "NI-siderophore", 
+  "NRPS-like,NRPS", "NRPS-like,T1PKS", "NRPS,T1PKS", "NRPS,T1PKS,NRPS-like", "phosphonate", "ranthipeptide", "resorcinol", 
+  "arylpolyene", "indole", "resorcinol,arylpolyene", "resorcinol,T3PKS", "RRE-containing,lassopeptide", "T1PKS,NRPS", 
+  "T1PKS,NRPS-like,NRPS", "thiopeptide", "T3PKS,hglE-KS", "thioamitides", "proteusin", "transAT-PKS,T3PKS", "transAT-PKS", 
+  "CDPS", "NRP-metallophore", "NRPS,NRPS-like"
+)
+
+
+
+# Get unique values in the protocluster column of combined_long_facet
+unique_protoclusters <- unique(combined_long_facet$protocluster)
+
+# Find values in the protocluster column that are not in the conversion list
+unmatched_protoclusters <- setdiff(unique_protoclusters, conversion_list)
+
+# Print the unmatched values
+print(unmatched_protoclusters)
+
+```
+
+
+
+
+```{r}
+# Trim whitespace from protocluster values in the dataframe
+combined_long_facet <- combined_long_facet %>%
+  mutate(protocluster = str_trim(protocluster))
+
+# Ensure conversion list has no extra spaces
+conversion_list <- str_trim(conversion_list)
+
+# Get unique values in the protocluster column of combined_long_facet
+unique_protoclusters <- unique(combined_long_facet$protocluster)
+
+# Find values in the protocluster column that are not in the conversion list
+unmatched_protoclusters <- setdiff(unique_protoclusters, conversion_list)
+
+# Print the unmatched values
+print(unmatched_protoclusters)
+
+```
+
+
+
+make a dictionary of node_names and which assembly they came from
+```{r}
+node_dictionary <- combined_long_facet %>%
+  group_by(NODE_name, assembly) %>%
+  summarise(count = n())
+
+write.csv(node_dictionary, "node_dictionary.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------OLDER ANALYSIS------------------------------------------------------------------------
+```{r}
+# Read the processed data
+readcounts <- read.csv("final_data.csv")
+readcounts$Replicate <- sub("_.*", "", readcounts$Sample)
+```
+
+```{r}
+# Create a bar plot showing ReadCount by BGC_Category
+ggplot(readcounts, aes(x = Replicate, y = ReadCount, fill = BGC_Category)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  theme_minimal() +
+  labs(x = "Metatranscriptome replicate", y = "Total BGC Read Count") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme_classic()
+
+ggplot(readcounts, aes(x = Replicate, y = ReadCount, fill = BGC_Category)) +
+  geom_bar(stat = "identity") +
+  scale_y_log10() +
+  theme_minimal() +
+  labs(x = "Metatranscriptome replicate", y = "Total BGC Read Count", fill = "BGC_Category") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme_classic()
+
+
+# Save the plot as an image
+ggsave("bgc_read_counts_plot.png")
+```
+
