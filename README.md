@@ -1,4 +1,4 @@
-# Exploring the biosynthetic potential of the metagenome and metatranscriptome of methane-oxidizing bacterial communities
+### Exploring the biosynthetic potential of a methane-oxidizing bacterial community through metagenomics and metatranscriptomics
 
 Given 3 biological replicates, each with a corresponding metagenome and metatranscriptome, here are the avenues for analysis: 
 1. [Mapping merged reads to the co-assembly]()
