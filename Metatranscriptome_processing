@@ -1,157 +1,41 @@
 Lake Washington low iron metatranscriptomics processing and analysis!
-Pipeline overview:
-   1. Remove adapters and phiX with bbduk
-   2. Trim and filter reads based on quality with fastp
-   3. Map reads to the metagenome assembly with bowtie2
-   4. Merge biological replicates with samtools
-####################################################################################
+
 TASKS AND OUTPUTS
 1. Remove adapters and phix with bbduk  
    [x] run bbduk.sh : slurm-6823318.out
    [x] confirm output files (out=${sample}.interleaved.atrim.decontam.fq.gz) can be read and have a reasonable size
 	- check the file size
-		[output file1] ls -lh /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.interleaved.atrim.fq.gz
-			--> output is 12G
-		[output file2] ls -lh /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.interleaved.atrim.decontam.fq.gz
-			--> output is 13G
+		ls -lh /path/sample.interleaved.atrim.fq.gz
+			--> output is 12G, 13G
 	- check file contents 
-		[output file1] zcat /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.interleaved.atrim.fq.gz | head -n 20
+		zcat /path/sample.interleaved.atrim.fq.gz | head -n 20
 			--> got expected output
-		[output file2] zcat /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.interleaved.atrim.decontam.fq.gz | head -n 20
-			--> got expected output		
 	- optional: check the line count
-		[output file1] zcat /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.interleaved.atrim.fq.gz | wc -l
-		[output file2] zcat /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.interleaved.atrim.decontam.fq.gz | wc -l
-
+		zcat /path/sample.interleaved.atrim.fq.gz | wc -l
+		
 2. Trim and filter based on quality with fastp  
    [x] run fastp.sh : slurm-6824734.out
    [x] confirm output files (${sample}.interleaved.atrim.decontam.fastp.fq.gz) can be read and have a reasonable size
-	- check the file size
-		[output file] ls -lh /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.interleaved.atrim.decontam.fastp.fq.gz
-			--> size is 65G
-	- check file contents 
-		[output file] zcat /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.interleaved.atrim.decontam.fastp.fq.gz | head -n 20
-			--> "gzip: not in gzip format"
-			--> running "cat" not "zcat" results in DNA sequences as expected
 
-3. Read mapping with bowtie2
+3. Build the bowtie2 index
+   [x] run bowtie_index.sh
+   [x] verify the presence of index files (should see files like "scaffold_index.1.bt2", "scaffold_index.2.bt2", etc.)
+
+4. Read mapping with bowtie2
    [x] ensure bowtie2 environment contains samtools
 	>conda activate bowtie2
 	>conda install bioconda::samtools
-   [x] build the bowtie2 index outside the batch script
-	>module load miniconda3/latest
-	>source /uufs/chpc.utah.edu/common/home/u0885949/software/pkg/miniconda3/etc/profile.d/conda.sh  
-	>conda activate bowtie2
-	>bowtie2-build /scratch/general/vast/u1260626/21113R/contigs/metaSPAdes_merged.Assembly.fa /scratch/general/vast/u1260626/21113R/metaSPAdes_merged
-   [x] verify the index files (should see files like "metaSPAdes_merged.1.bt2", metaSPAdes_merged.2.bt2", etc.
-	ls /scratch/general/vast/u1260626/21113R/metaSPAdes_merged*
    [x] run bowtie.sh : slurm-6825492.out
    [x] confirm output files can be read and have a reasonable size
-	- check the slurm output file
-		cat slurm-6825492.out
-			Running bowtie2 for sample 21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003...       
-			Processing SAM file for sample 21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003...   
-			[bam_sort_core] merging from 65 files and 1 in-memory blocks...                      
-			Running bowtie2 for sample 21113X2_20230901_LH00227_0010_A227Y5JLT3_S60_L003...    
-			Processing SAM file for sample 21113X2_20230901_LH00227_0010_A227Y5JLT3_S60_L003...           
-			[bam_sort_core] merging from 93 files and 1 in-memory blocks...                                         
-			Running bowtie2 for sample 21113X3_20230901_LH00227_0010_A227Y5JLT3_S61_L003...                                   
-			Processing SAM file for sample 21113X3_20230901_LH00227_0010_A227Y5JLT3_S61_L003...                               
-			[bam_sort_core] merging from 79 files and 1 in-memory blocks...                                           
-	- inspect the bowtie2 log file
-		ls -lh /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.bowtie2.log
-			--> puri 1.6K Jul 29 17:28
-		cat /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.bowtie2.log
-			Use of uninitialized value $bt2_args[4] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 423.
-Use of uninitialized value $bt2_args[5] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 423.
-Use of uninitialized value in exists at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 81.  
-Use of uninitialized value in exists at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 81.  
-Use of uninitialized value $bt2_args[4] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 459. 
-Use of uninitialized value $bt2_args[5] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 459.                                                                             			
-100640833 reads; of these:                                                                                                                                                                                                                     				
-100640833 (100.00%) were paired; of these:                                                                                                                                                                                                     					
-33955298 (33.74%) aligned concordantly 0 times                                                                                                                                                                                               					
-53624601 (53.28%) aligned concordantly exactly 1 time          
-					13060934 (12.98%) aligned concordantly >1 times     
-----                                                                                                                                                                                                                                         					
-33955298 pairs aligned concordantly 0 times; of these:   
-
-1356054 (3.99%) aligned discordantly 1 
-
-----                                                                                                                                                                                                                                         					
-32599244 pairs aligned 0 times concordantly or discordantly; of these:                                                                                                                                                                         						
-65198488 mates make up the pairs; of these:                                        
-62595198 (96.01%) aligned 0 times                                              
-1404971 (2.15%) aligned exactly 1 time                                            
-
-1198319 (1.84%) aligned >1 times                                                                                                                                                                                                     			
-68.90% overall alignment rate 
-		ls -lh /scratch/general/vast/u1260626/21113R/21113X2_20230901_LH00227_0010_A227Y5JLT3_S60_L003.bowtie2.log
-			--> puri 1.6K Jul 29 13:58
-		cat /scratch/general/vast/u1260626/21113R/21113X2_20230901_LH00227_0010_A227Y5JLT3_S60_L003.bowtie2.log  
-			Use of uninitialized value $bt2_args[4] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 423.
-			Use of uninitialized value $bt2_args[5] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 423.
-			Use of uninitialized value in exists at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 81.
-			Use of uninitialized value in exists at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 81.
-			Use of uninitialized value $bt2_args[4] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 459.
-			Use of uninitialized value $bt2_args[5] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 459.
-			117146886 reads; of these:
-				117146886 (100.00%) were paired; of these:
-					20490596 (17.49%) aligned concordantly 0 times
-					92940732 (79.34%) aligned concordantly exactly 1 time
-					3715558 (3.17%) aligned concordantly >1                         
-					----
-					20490596 pairs aligned concordantly 0 times; of these:
-						2369453 (11.56%) aligned discordantly 1 time
-					----
-					18121143 pairs aligned 0 times concordantly or discordantly; of these:
-						36242286 mates make up the pairs; of these:
-							34340337 (94.75%) aligned 0 times
-							1606792 (4.43%) aligned exactly 1 time
-							295157 (0.81%) aligned >1 times                                               
-			85.34% overall alignment rate
-
-		ls -lh /scratch/general/vast/u1260626/21113R/21113X3_20230901_LH00227_0010_A227Y5JLT3_S61_L003.bowtie2.log
-			--> puri 1.6K Jul 29 15:12 
-		cat /scratch/general/vast/u1260626/21113R/21113X3_20230901_LH00227_0010_A227Y5JLT3_S61_L003.bowtie2.log
-			Use of uninitialized value $bt2_args[4] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 423.                                                                             			
-Use of uninitialized value $bt2_args[5] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 423.  
-Use of uninitialized value in exists at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 81.                             
-Use of uninitialized value in exists at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 81.                              
-Use of uninitialized value $bt2_args[4] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 459.       
-Use of uninitialized value $bt2_args[5] in join or string at /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/envs/bowtie2/bin/bowtie2 line 459.          
-110088161 reads; of these:                                                                                                                                              
-110088161 (100.00%) were paired; of these:  
-28311012 (25.72%) aligned concordantly 0 times     
-71948737 (65.36%) aligned concordantly exactly 1 time  
-
-9828412 (8.93%) aligned concordantly >1 times     
-					----                                                                                                                                                                                                                                         					
-28311012 pairs aligned concordantly 0 times; of these: 
-1853615 (6.55%) aligned discordantly 1 time             
-
-					----                                                                                                                                                                                                                                         					
-26457397 pairs aligned 0 times concordantly or discordantly; of these:  
-52914794 mates make up the pairs; of these:   
-51202047 (96.76%) aligned 0 times              
-953146 (1.80%) aligned exactly 1 time           
-759601 (1.44%) aligned >1 times                
-76.74% overall alignment rate 
-
-	- verify the presence of .bam files
-		ls /scratch/general/vast/u1260626/21113R/*.bam
-			/scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.bam
-			/scratch/general/vast/u1260626/21113R/21113X2_20230901_LH00227_0010_A227Y5JLT3_S60_L003.bam      
-			/scratch/general/vast/u1260626/21113R/21113X3_20230901_LH00227_0010_A227Y5JLT3_S61_L003.bam 
+	- check the slurm output file            
+	- inspect the bowtie2 log file to get overall alignment rates for each reads replicate file
+		--> 87.01%, 86.27%, 80.94%
+	- verify the presence of .bam files in output folder
 	- check the size of .bam files
-		ls -lh /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.bam
-			--> size 5.1 G
-		ls -lh /scratch/general/vast/u1260626/21113R/21113X2_20230901_LH00227_0010_A227Y5JLT3_S60_L003.bam
-			--> size 6.9 G
-		ls -lh /scratch/general/vast/u1260626/21113R/21113X3_20230901_LH00227_0010_A227Y5JLT3_S61_L003.bam
-			--> size 5.7 G
+		ls -lh /path/sample.bam
+			--> size 6.5G, 7.0G, 6.1G
 	- check header of .bam file
-		samtools view -H /scratch/general/vast/u1260626/21113R/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.bam 
+		samtools view -H /scratch/general/vast/u1260626/21113R/Billy_metaSPAdes/21113X1_20230901_LH00227_0010_A227Y5JLT3_S59_L003.bam 
 			--> output is a long list of names in the format of: @SQ     SN:NODE_35212_length_2000_cov_70.075578 LN:2000
 
 4. Merge biological replicate .bam files with samtools
@@ -162,8 +46,6 @@ Use of uninitialized value $bt2_args[5] in join or string at /uufs/chpc.utah.edu
 			--> size is 18G
 		[output file] ls -lh /scratch/general/vast/u1260626/21113R/merged_replicates.bam.bai
 			--> size is 3.1M
-
-
 
 #### bbduk.sh #######################################################################################################################################
 
@@ -210,7 +92,19 @@ else
 echo "Input file $input_file does not exist. Skipping." 
 done 
 
-#### bowtie4.sh ####################################################################################################################################
+#### bowtie_index.sh ####################################################################################################################################
+#! /bin/sh
+#SBATCH --cpus-per-task 4
+#SBATCH --nodes 1
+#SBATCH --account=puri
+#SBATCH --partition=lonepeak
+module use $HOME/MyModules
+module load miniconda3/latest
+source /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/etc/profile.d/conda.sh
+conda activate bowtie2
+bowtie2-build /scratch/general/vast/u1260626/21113R/Billy_metaSPAdes/scaffolds.fasta /scratch/general/vast/u1260626/21113R/Billy_metaSPAdes/scaffold_index   
+
+#### bowtie.sh ####################################################################################################################################
 #!/bin/bash     
 #SBATCH --account=puri    
 #SBATCH --partition=lonepeak 
@@ -221,12 +115,11 @@ module load miniconda3/latest
 source /uufs/chpc.utah.edu/common/home/u1260626/software/pkg/miniconda3/etc/profile.d/conda.sh          
 conda activate bowtie2          
 
-# Verify Bowtie 2 index files exist   
+# Verify Bowtie2 index files exist   
 if [[ ! -f "/scratch/general/vast/u1260626/21113R/metaSPAdes_merged.1.bt2" ]]; then       
 echo "Bowtie 2 index files not found in /scratch/general/vast/u1260626/21113R/"  
 exit 1                                                              
 fi                                                                                                      
-
 
 for sample in $(awk '{print $1}' samples.txt)
 do                                            
