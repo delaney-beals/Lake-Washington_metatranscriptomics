@@ -10,4 +10,5 @@ Once you have processed all 3 samples, each with a corresponding metagenome (211
 2. [Mapping reads to individual MAGs of interest](https://github.com/delaney-beals/LW-lowFe/blob/main/Individual-MAGs_README.md)
 3. [Mapping reads to antiSMASH clusters of interest](https://github.com/delaney-beals/LW-lowFe/blob/main/antiSMASH-map_README.md)
 4. [Mapping all reads sets to all replicates + co-assembly and focusing on antiSMASH clusters of interest](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all_README.md)
+5. [BiG-MAP analysis to get RPKM values](https://github.com/delaney-beals/LW-lowFe/blob/main/bigmap_RPKM_cleaning.R)
 
