@@ -429,4 +429,3 @@ ggplot(result_tbl_new, aes(x = Type, y = result, fill = Type)) +
        x = "Type of BGC",
        y = "Read Count") +
   theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1.1)) 
-

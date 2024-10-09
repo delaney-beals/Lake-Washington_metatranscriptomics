@@ -212,6 +212,29 @@ ggplot(aggregated_data_cat, aes(x = bin, y = count, fill = Main_Type)) +
        fill = "Type") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
+# flip this so it tabulates all the BGCs
+ggplot(aggregated_data_cat, aes(x = Main_Type, y = count, fill = Main_Type)) +
+  geom_bar(stat = "identity", color = "black") +
+  theme_minimal() +
+  labs(title = "Predicted BGCs per Bin",
+       x = "Bin",
+       y = "# of BGCs detected",
+       fill = "Type") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# generate interactive plot
+plot2<- ggplot(aggregated_data_cat, aes(x = Main_Type, y = count, fill = Main_Type, 
+                                         text = paste("bin:", bin))) +
+  geom_bar(stat = "identity", color = "black") +
+  labs(title = "Predicted BGCs per Bin",
+       x = "Bin",
+       y = "# of BGCs detected",
+       fill = "Type") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1.1), legend.position = "none")
+
+ggplotly(plot2, tooltip = c("x", "y", "text"))
+
 
 ## circular bar plot
 ggplot(aggregated_data_cat, aes(x=as.factor(bin), y=count, fill = Main_Type)) + 
@@ -290,6 +313,36 @@ aggregated_data_cat_tax_labels$label <- ifelse(
 
 
 
+# generate interactive plot
+plot3<- ggplot(aggregated_data_cat_tax_labels, aes(x = Main_Type, y = count, fill = Main_Type, 
+                                        text = paste("Taxa:", label))) +
+  geom_bar(stat = "identity", color = "black") +
+  labs(title = "Predicted BGCs per Bin",
+       x = "Bin",
+       y = "# of BGCs detected",
+       fill = "Type") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1.1), legend.position = "none")
 
+ggplotly(plot3, tooltip = c("x", "y", "text"))
+
+ggplot(aggregated_data_cat_tax, aes(x = bin, y = count, fill = Main_Type)) +
+  geom_bar(stat = "identity", color = "black") +
+  theme_minimal() +
+  ylim(0,30) +
+  labs(title = "Predicted BGCs per Bin",
+       x = "Bin",
+       y = "# of BGCs detected",
+       fill = "Type") +
+  theme(text=element_text(size=14),
+        axis.text.x = element_text(size = 14, angle = 90, hjust = 1, vjust = -0.04, color = "black", face = "italic"),
+        axis.text.y = element_text(size = 14, color = "black"), 
+        title = element_text(size = 14, color = "black"), 
+        legend.title = element_blank(), 
+        panel.grid.major.x = element_blank(), 
+        panel.grid.minor.x = element_blank(), 
+        panel.grid.minor.y = element_blank()
+  ) +
+  scale_x_discrete(labels = aggregated_data_cat_tax_labels$label) 
 
 
