@@ -17,8 +17,9 @@
    - Add [gbk_to_gff.py](https://github.com/delaney-beals/LW-lowFe/blob/main/gbk_to_gff.py) to your working directory
    - Ensure paths are correct in [gbk_to_gff.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/gbk_to_gff.sh) and run
 2. Process antiSMASH Output # do this once per metagenome
-      > grep "NODE" scaffolds.gff | cut -f1 | sort | uniq > scaffolds_node_names.txt
-
+      ```
+      grep "NODE" scaffolds.gff | cut -f1 | sort | uniq > scaffolds_node_names.txt
+      ```
 4. Keep only NODES that are antiSMASH hits
    - Run the [relevant_nodes.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/relevant_nodes.sh) script to filter out only the NODE names from scaffolds.gff that have a corresponding .gbk file in the antiSMASH output folder.
 
@@ -34,19 +35,28 @@ Unless there's a link to a slurm script, run the indented code below directly in
    - This will create a file node_read_counts.txt where each row contains:
    
      NODE_name | NODE_length | number_of_mapped_reads | number_of_unmapped_reads
-   > samtools idxstats output/your_alignment.bam > node_read_counts.txt
-
+     ```
+     samtools idxstats output/your_alignment.bam > node_read_counts.txt 
+     ```
+   
 2. Combine the read counts with the NODE_name information from antiSMASH
-   > for file in node_read_counts*.txt; do join -1 1 -2 1 <(sort "$file") <(sort nodes_in_antismash.txt) > "combined_${file%.txt}.txt"; done
-
+     ```
+     for file in node_read_counts*.txt
+       do join -1 1 -2 1 <(sort "$file") <(sort nodes_in_antismash.txt) > "combined_${file%.txt}.txt"
+       done
+     ```
 3. Add biosynthetic cluster names to read count table using [merge_tables.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/merge_tables.sh) 
 
 4. Convert merged_output.txt to a .csv
-   > for file in merged_output_21113X*.txt; do tr -s ' ' ',' < "$file" > "${file%.txt}.csv"; done
+    ```
+    for file in merged_output_21113X*.txt
+     do tr -s ' ' ',' < "$file" > "${file%.txt}.csv"
+     done
+    ```
 
    
 
-Now go to metaSPAdes_antismash_viz.Rmd to visualize these. 
+Now go to [metaSPAdes_antismash_viz.Rmd](https://github.com/delaney-beals/LW-lowFe/blob/main/metaSPAdes_antismash_viz.Rmd) to visualize these. 
 
 
 
