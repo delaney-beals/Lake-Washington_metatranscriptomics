@@ -1,10 +1,10 @@
 ### Mapping all reads sets to all replicates + co-assembly and focusing on antiSMASH clusters of interest
   1. Process DNA and RNA
        - Starting with raw DNA sequences
-         - In [KBASE](https://narrative.kbase.us/narrative/156152): trim, check quality, and assemble (merging biological replicates for the co-assembly)
+         - In [KBASE](https://kbase.us/n/156152/78/): trim, check quality, and assemble (merging biological replicates for the co-assembly)
          - Download each metaSPAdes-assembled **21142X#.Assembly.fa** file (4 total)
       - Starting with raw RNA reads
-         - Run the bash scripts in [Metatranscriptome_processing](https://github.com/delaney-beals/LW-lowFe/blob/main/Metatranscriptome_processing) to trim adapters, check quality, map reads to the metagenome
+         - Run the bash scripts in [Metatranscriptome_processing](https://github.com/delaney-beals/LW-lowFe/blob/main/Metatranscriptome_processing.md) to trim adapters, check quality, map reads to the metagenome
          - Make bowtie2 indices of each metagenome assembly
          - Repeat this for all four metagenomes: rep 1, rep 2, rep 3, and the co-assembly. Each of these four metagenomes will have all three metatranscriptome replicates mapped onto them (resulting in 12 total .bam files). 
          - Output files: **X.bam** and its accompanying indexed bam, **X.bam.bai**
@@ -14,17 +14,17 @@
 
 #### For each metagenome...
 1. Convert .gbk files to .gff
-   - Add [gbk_to_gff.py](https://github.com/delaney-beals/LW-lowFe/blob/main/gbk_to_gff.py) to your working directory
-   - Ensure paths are correct in [gbk_to_gff.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/gbk_to_gff.sh) and run
+   - Add [gbk_to_gff.py](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all/gbk_to_gff.py) to your working directory
+   - Ensure paths are correct in [gbk_to_gff.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all/gbk_to_gff.sh) and run
 2. Process antiSMASH Output # do this once per metagenome
       ```
       grep "NODE" scaffolds.gff | cut -f1 | sort | uniq > scaffolds_node_names.txt
       ```
 4. Keep only NODES that are antiSMASH hits
-   - Run the [relevant_nodes.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/relevant_nodes.sh) script to filter out only the NODE names from scaffolds.gff that have a corresponding .gbk file in the antiSMASH output folder.
+   - Run the [relevant_nodes.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all/relevant_nodes.sh) script to filter out only the NODE names from scaffolds.gff that have a corresponding .gbk file in the antiSMASH output folder.
 
 5. Generate table of biosynthetic gene cluster names
-   - Navigate to where the .gbk files are stored and run [protocluster_table.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/protocluster_table.sh).
+   - Navigate to where the .gbk files are stored and run [protocluster_table.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all/protocluster_table.sh).
    - Copy the protocluster_table.txt to map_meta/21142X# 
 
 
@@ -45,7 +45,7 @@ Unless there's a link to a slurm script, run the indented code below directly in
        do join -1 1 -2 1 <(sort "$file") <(sort nodes_in_antismash.txt) > "combined_${file%.txt}.txt"
        done
      ```
-3. Add biosynthetic cluster names to read count table using [merge_tables.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/merge_tables.sh) 
+3. Add biosynthetic cluster names to read count table using [merge_tables.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all/merge_tables.sh) 
 
 4. Convert merged_output.txt to a .csv
     ```
@@ -56,7 +56,7 @@ Unless there's a link to a slurm script, run the indented code below directly in
 
    
 
-Now go to [metaSPAdes_antismash_viz.Rmd](https://github.com/delaney-beals/LW-lowFe/blob/main/metaSPAdes_antismash_viz.Rmd) to visualize these. 
+Now go to [metaSPAdes_antismash_viz.Rmd](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all/metaSPAdes_antismash_viz.Rmd) to visualize these. 
 
 
 
