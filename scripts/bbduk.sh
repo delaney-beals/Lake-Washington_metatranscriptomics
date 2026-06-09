@@ -1,0 +1,12 @@
+```bash
+#! /bin/sh                                                                                                                                                                                                         
+#SBATCH --cpus-per-task 4                                                                                                                                                                                          
+#SBATCH --nodes 1                                                                                                                                                                                                  
+#SBATCH --account=puri                                                                                                                                                                                             
+#SBATCH --partition=lonepeak                                                                                                                                                                                       
+for sample in `awk '{print $1}' samples.txt`                                                                                                                                                                       
+do                                                                                                                                                                                                                
+~/software/bbmap/bbduk.sh -Xmx10g ziplevel=9 threads=12 qin=33 ref=adapters.fa in1=/scratch/general/vast/u6015879/LWRNAseq21113R/${sample}_R1_001.fastq.gz in2=/scratch/general/vast/u6015879/LWRNAseq21113R/${sample}_R2_001.fastq.gz out=/scratch/general/vast/u1260626/21113R/${sample}.interleaved.atrim.fq.gz stats=/scratch/general/vast/u1260626/21113R/${sample}.adapter_stats.txt ftm=5 ktrim=r k=23 mink=9 rcomp=t hdist=2 tbo tpe minlength=0 2>/scratch/general/vast/u1260626/21113R/${sample}.adapters.log
+~/software/bbmap/bbduk.sh -Xmx10g threads=12 qin=33 interleaved=t ref=phix.fa in=/scratch/general/vast/u1260626/21113R/${sample}.interleaved.atrim.fq.gz out=/scratch/general/vast/u1260626/21113R/${sample}.interleaved.atrim.decontam.fq.gz outm=/scratch/general/vast/u1260626/21113R/${sample}.phix.fq.gz k=31 hdist=1 mcf=0.9 stats=/scratch/general/vast/u1260626/21113R/${sample}.phix_stats.txt 2</scratch/general/vast/u1260626/21113R/${sample}.phix.log
+done 
+```
