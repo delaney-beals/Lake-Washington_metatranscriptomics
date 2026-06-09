@@ -4,7 +4,7 @@
          - In [KBASE](https://kbase.us/n/156152/78/) : trim, check quality, and assemble (merging biological replicates)
          - Download the **metaSPAdes_merged.Assembly.fa** file
       - Starting with raw RNA reads
-         - Run the bash scripts in [Metatranscriptome_processing.md]([https://github.com/delaney-beals/LW-lowFe/blob/main/Metatranscriptome_processing](https://github.com/delaney-beals/LW-lowFe/blob/main/Metatranscriptome_processing.md)) to trim adapters, check quality, map reads to the metagenome, and merge biological replicates
+         - Run the bash scripts in [Metatranscriptome_processing.md](https://github.com/delaney-beals/LW-lowFe/blob/main/Metatranscriptome_processing.md) to trim adapters, check quality, map reads to the metagenome, and merge biological replicates
          - Output files: **merged_replicates.bam** and its accompanying indexed bam, **merged_replicates.bam.bai**
   2. Run antiSMASH on the metagenome
        - Run [Local_antiSMASH](https://github.com/delaney-beals/LW-lowFe/blob/main/Local_antiSMASH) on **metaSPAdes_merged.Assembly.fa**
