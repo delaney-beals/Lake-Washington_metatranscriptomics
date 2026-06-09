@@ -4,7 +4,7 @@
 
 ### 1. Remove adapters and PhiX with bbduk
 
-- [x] Run `bbduk.sh` (`slurm-6823318.out`)
+- [x] Run [bbduk.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/scripts/bbduk.sh)
 - [x] Confirm output files (`${sample}.interleaved.atrim.decontam.fq.gz`) can be read and have a reasonable size
 
 #### Check file size
@@ -36,14 +36,14 @@ zcat /path/sample.interleaved.atrim.fq.gz | wc -l
 
 ### 2. Trim and filter based on quality with fastp
 
-- [x] Run `fastp.sh` (`slurm-6824734.out`)
+- [x] Run [fastp2.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/scripts/fastp2.sh)
 - [x] Confirm output files (`${sample}.interleaved.atrim.decontam.fastp.fq.gz`) can be read and have a reasonable size
 
 ---
 
 ### 3. Build the Bowtie2 index
 
-- [x] Run `bowtie_index.sh`
+- [x] Run [bowtie_index.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/scripts/bowtie_index.sh)
 - [x] Verify the presence of index files
 
 Expected files:
@@ -68,7 +68,7 @@ conda activate bowtie2
 conda install bioconda::samtools
 ```
 
-- [x] Run `bowtie.sh` (`slurm-6825492.out`)
+- [x] Run [bowtie.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/scripts/bowtie.sh)
 - [x] Confirm output files can be read and have a reasonable size
 
 #### Check alignment rates
@@ -121,7 +121,7 @@ Expected output:
 
 ### 5. Merge biological replicate BAM files with samtools
 
-- [x] Run `merge_bam.sh` (`slurm-6825748.out`)
+- [x] Run [merge_bam.sh](https://github.com/delaney-beals/LW-lowFe/blob/main/scripts/merge_bam.sh)
 - [x] Confirm output files can be read and have a reasonable size
 
 #### Check merged BAM size
