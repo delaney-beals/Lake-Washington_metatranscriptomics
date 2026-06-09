@@ -35,11 +35,11 @@ Starting with 3 biological replicates and raw DNA and RNA sequencing data:
 
 
 Once you have processed all 3 samples, each with a corresponding metagenome (21142X#) and metatranscriptome (21113X#), here are the avenues for analysis: 
-1. [Mapping merged reads to the co-assembly](https://github.com/delaney-beals/LW-lowFe/blob/main/Co-assembly/Co-assembly_README.md)
-2. [Mapping reads to individual MAGs of interest](https://github.com/delaney-beals/LW-lowFe/blob/main/Individual-MAGs/Individual-MAGs_README.md)
-3. [Mapping reads to antiSMASH clusters of interest](https://github.com/delaney-beals/LW-lowFe/blob/main/antiSMASH-map/antiSMASH-map_README.md)
-4. [Mapping all reads sets to all replicates + co-assembly and focusing on antiSMASH clusters of interest](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all/All-by-all_README.md)
-5. [BiG-MAP analysis to get RPKM values](https://github.com/delaney-beals/LW-lowFe/blob/main/BiG-MAP/bigmap_RPKM_cleaning.R)
+1. [Co-assembly](https://github.com/delaney-beals/LW-lowFe/blob/main/Co-assembly/Co-assembly_README.md): Mapping merged reads to the co-assembly
+2. [Individual MAGs](https://github.com/delaney-beals/LW-lowFe/blob/main/Individual-MAGs/Individual-MAGs_README.md): Mapping reads to individual MAGs of interest
+3. [antiSMASH map](https://github.com/delaney-beals/LW-lowFe/blob/main/antiSMASH-map/antiSMASH-map_README.md): Mapping reads to antiSMASH clusters of interest
+4. [All-by-all](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all/All-by-all_README.md): Mapping all reads sets to all replicates + co-assembly and focusing on antiSMASH clusters of interest 
+5. [BiG-MAP](https://github.com/delaney-beals/LW-lowFe/blob/main/BiG-MAP/bigmap_RPKM_cleaning.R): BiG-MAP analysis to get RPKM values
 
 
 
