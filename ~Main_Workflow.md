@@ -12,3 +12,5 @@ Once you have processed all 3 samples, each with a corresponding metagenome (211
 4. [Mapping all reads sets to all replicates + co-assembly and focusing on antiSMASH clusters of interest](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all/All-by-all_README.md)
 5. [BiG-MAP analysis to get RPKM values](https://github.com/delaney-beals/LW-lowFe/blob/main/BiG-MAP/bigmap_RPKM_cleaning.R)
 
+
+
