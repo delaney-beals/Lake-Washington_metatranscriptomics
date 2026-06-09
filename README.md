@@ -31,7 +31,7 @@ Raw sequencing data are not included in this repository. File paths and software
 Starting with 3 biological replicates and raw DNA and RNA sequencing data: 
 1. Process the DNA to generate metagenomes
 2. Process the RNA to generate metatranscriptomes
-   - Run the bash scripts in [Metatranscriptome_processing](https://github.com/delaney-beals/LW-lowFe/blob/main/Metatranscriptome_processing) to trim adapters, check quality, map reads to the   metagenome, and *optionally* merge biological replicates 
+   - Run the bash scripts in [Metatranscriptome_processing.md](https://github.com/delaney-beals/LW-lowFe/blob/main/Metatranscriptome_processing.md) to trim adapters, check quality, map reads to the   metagenome, and *optionally* merge biological replicates 
 
 
 Once you have processed all 3 samples, each with a corresponding metagenome (21142X#) and metatranscriptome (21113X#), here are the avenues for analysis: 
