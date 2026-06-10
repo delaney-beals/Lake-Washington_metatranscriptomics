@@ -1,4 +1,4 @@
-# Methane community metagenomics and metatranscriptomics exploration
+# Methane-oxidizing bacterial community metagenomics and metatranscriptomics exploration
 
 This repository contains exploratory metagenomic and metatranscriptomic analyses performed on a methane-oxidizing bacterial community enriched in low iron nitrate mineral salts medium under methane gas from a Lake Washington sediment inoculum.
 
