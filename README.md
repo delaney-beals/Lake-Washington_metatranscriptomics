@@ -19,12 +19,7 @@ Unlike the code associated with the final publication, **this repository primari
   * Exploratory analyses investigating MAGs, BGC expression, antiSMASH predictions, and BiG-MAP outputs.
 
 ## Relationship to published work
-
-This repository documents exploratory analyses that informed later project development but does not represent the final computational workflow used for the published study. The final publication focused on identifying and characterizing methylocystabactin through integration of metagenomics, metatranscriptomics, metabolomics, and InverSIP experiments.
-
-## Data availability
-
-Raw sequencing data are not included in this repository. File paths and software environments reflect the original analysis environment and may require modification before reuse.
+This repository contains exploratory analyses that informed later project development but does not represent the final computational workflow used in the associated publication. Raw sequencing data are not included. Scripts, file paths, and software environments reflect the original analysis environment and may require modification before reuse. For additional information regarding the biological questions, experimental methods, underlying datasets, or final published results, please contact [Aaron Puri](https://www.chemistry.utah.edu/faculty/aaron-w-puri/) at the University of Utah or see the associated [publication](https://doi.org/10.1073/pnas.2507323122).
 
 ----
 # Main workflow
@@ -40,6 +35,3 @@ Once you have processed all 3 samples, each with a corresponding metagenome (211
 3. [antiSMASH map](https://github.com/delaney-beals/LW-lowFe/blob/main/antiSMASH-map/antiSMASH-map_README.md): Mapping reads to antiSMASH clusters of interest
 4. [All-by-all](https://github.com/delaney-beals/LW-lowFe/blob/main/All-by-all/All-by-all_README.md): Mapping all reads sets to all replicates + co-assembly and focusing on antiSMASH clusters of interest 
 5. [BiG-MAP](https://github.com/delaney-beals/LW-lowFe/blob/main/BiG-MAP/bigmap_RPKM_cleaning.R): BiG-MAP analysis to get RPKM values
-
-
-
